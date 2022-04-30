@@ -3,10 +3,66 @@
 #include <sstream>
 #include <fstream>
 #include <windows.h>
+#include <cstring>
 using namespace std;
 
 typedef long int tipolista;
-
+/*class instruccion{
+	public:
+		instruccion(){
+			
+		}
+		void ejecutar();
+};
+class suma:public instruccion{
+	public:
+		suma(){
+			instruccion();
+	}
+	//@Override
+		void ejecutar(){
+		
+	}
+};
+class resta:public instruccion{
+	public:
+		resta(){
+			instruccion();
+		}
+	//@Override
+	void ejecutar(){
+		
+	}
+};
+class multiplicacion:public instruccion{
+	public:
+		multiplicacion(){
+			instruccion();
+		}
+	//@Override
+	void ejecutar(){
+		
+	}
+};
+class division:public instruccion{
+	public:
+		division(){
+			instruccion();
+		}
+	//@Override
+	void ejecutar(){
+		
+	}
+};
+class booleano:public instruccion{
+	public:
+		booleano(){
+			instruccion();
+		}
+	//@Override
+	void ejecutar(){
+	}
+};*/
 class Nodo{
     protected:
         tipolista dato;
@@ -36,7 +92,7 @@ class Lista{
             void add(tipolista d);
             void addvar(char nombre); // crea un nuevo nodo que contiene la variable, definida por su nombre y un valor
             void addinstruccion(string ins); // crea un nuevo nodo que contiene la instruccion, que es pasada como parametro (string)
-            char ExtraeValor(char);
+            tipolista ExtraeValor(char);
             void asignarValor(char, tipolista);
             bool esvacia(void);
             tipolista cabeza(void);
@@ -98,15 +154,17 @@ char ExtraeNombre(string cadena){ // recorre el string pasado como parametro y e
             return n_variable = cadena.at(i);
      }
 }
-char Lista::ExtraeValor(char n){ // busca la variable en la lista de variables a partir de su nombre, y retorna su valor como char
+tipolista Lista::ExtraeValor(char n){ // busca la variable en la lista de variables a partir de su nombre, y retorna su valor como char
     char b;
     if(esvacia()){
         cout<<" Error, variable " << n << " no declarada";
-        return '\0';
+        //return '\0';
+        return -1;
         }
     if(n == czo->get_nombre()){
         tipolista a = czo->get_dato(); // recupero el valor de la variable
-        return b = a+'0'; // conversion del integer a char
+        //return b = a+'0'; // conversion del integer a char
+        return a;
     }else
         return resto()->ExtraeValor(n);
 }
@@ -198,73 +256,92 @@ for(int i=0;(i<cadena.length())&&(!error);i++){
     cout<<"\n Inicio conversion a POSFIJO de:"<<cadena<<endl;
 //conversion de entrefijo a posfijo
       char d,p1;
+      
       for(int j=0;j<cadena.length();j++)
-      {
-          d=cadena.at(j);
-	      if ( (d>='0') && (d<='9') ){
-             pf.push_back(d);
+      {   
+	  	  d=cadena.at(j);
+      
+      	  if( (d>='a') && (d<='z') ){ // si se encuentra una variable en la expresion
+
+			tipolista a = var->ExtraeValor(d);
+			stringstream ss;
+			ss << a;
+			string str = ss.str();
+            pf= pf+str; // guarda el valor que tiene la variable
+            continue;
 	      }
-	      else if( (d>='a') && (d<='z') ){ // si se encuentra una variable en la expresion
-                pf.push_back(var->ExtraeValor(d)); // guarda el valor que tiene la variable
-                //cout << "var->ExtraeValor(d) devuelve: " << var->ExtraeValor(d) << endl;
+      
+	      if ((d>='0')&&(d<='9')){
+             	pf.push_back(d);
+		}
+		  else
+	         { 
+			 	while((!p->pilavacia())&&(prcd(p->tope(),d)))
+	                {
+						p1=p->tope();
+						p->desapilar();
+						pf.push_back(' ');
+						pf.push_back(p1);
+		
+					}
+	           if((p->pilavacia())||(d!=')')){
+	           			p->apilar(d);
+	           			pf.push_back(' ');
+			   }
+			   		
+		       else 
+			   		p->desapilar();
 	      }
-	      else
-	         {
-               while( (!p->pilavacia()) && (prcd(p->tope(),d)) )
-                    {
-                        p1=p->tope();
-                        p->desapilar();
-                        pf.push_back(p1);
-                    }
-	           if( (p->pilavacia()) || (d!=')') )
-                    p->apilar(d);
-		       else
-                    p->desapilar();
-             }
       }
-      while(!p->pilavacia()){
-            p1=p->tope();
-            p->desapilar();
-            pf.push_back(p1);
-        }
-
+      while(!p->pilavacia())
+	      {
+		  	p1=p->tope();
+			p->desapilar();
+			pf.push_back(' ');
+			pf.push_back(p1);
+		}
+	      
       cout<<"\n TERMINE la conversion a POSFIJO: "<<pf<<endl;
+      
+// Evaluacion de la expresion en posfijo      
+  //int o1,o2;
 
-// Evaluacion de la expresion en posfijo
-  int o1,o2;
+  for(int i=0;(i<pf.length())&&(!error);++i){
 
-  for(int i=0; (i<pf.length()) && (!error) ; i++){
-     d=pf.at(i);
-     if(d>='0' && d<='9')
-        p->apilar(d-'0');
-     if(d=='+'){
-               o2=p->tope();
-               p->desapilar();
-               o1=p->tope();
-               p->desapilar();
-               p->apilar(o1+o2);
-     }
-     if(d=='-'){
-               o2=p->tope();
-               p->desapilar();
-               o1=p->tope();
-               p->desapilar();
-               p->apilar(o1-o2);
-     }
-     if(d=='*'){
-               o2=p->tope();
-               p->desapilar();
-               o1=p->tope();
-               p->desapilar();
-               p->apilar(o1*o2);
-     }
-     if(d=='/'){
-               o2=p->tope();
-               p->desapilar();
-               o1=p->tope();
-               p->desapilar();
-               p->apilar(o1/o2);
-     }
+     if(pf.at(i) == ' ')
+	 	continue;
+	 	
+     else if(isdigit(pf.at(i))){
+     	
+     	int num=0;
+     	//extract full number
+     	while(isdigit(pf.at(i)))
+			{
+			num = num * 10 + (int)(pf.at(i) - '0');
+				i++;
+			}
+			i--;
+			
+			p->apilar(num);
+	 }
+     
+	 else{
+	 
+	 		int val1 = p->tope();
+	 		p->desapilar();
+			int val2 = p->tope();
+			p->desapilar();
+			
+			switch (pf.at(i))
+			{
+			case '+': p->apilar(val2 + val1); break;
+			case '-': p->apilar(val2 - val1); break;
+			case '*': p->apilar(val2 * val1); break;
+			case '/': p->apilar(val2/val1); break;
+			
+			}
+	}
+	       
   }
   cout<<endl<<"\n\nResultado= "<<p->tope()<<endl;
   return p->tope();
@@ -301,10 +378,10 @@ for(int i=0;(i<cadena.length())&&(!error);i++){
     if((!error)&&p->pilavacia())cout<<endl<<"TOdo OK"<<endl;
     else cout<<endl<<"ERROR";
 
-    cout<<"\n Inicio conversion a POSFIJO de:"<<cadena<<endl;
+    //cout<<"\n Inicio conversion a POSFIJO de:"<<cadena<<endl;
 //conversion de entrefijo a posfijo
       char d,p1;
-      for(int j=0;j<cadena.length();j++)
+      /*for(int j=0;j<cadena.length();j++)
       {
           d=cadena.at(j);
 	      if ( (d>='0') && (d<='9') ){
@@ -312,7 +389,7 @@ for(int i=0;(i<cadena.length())&&(!error);i++){
 	      }
 	      else if( (d>='a') && (d<='z') ){ // si se encuentra una variable en la expresion
                 pf.push_back(var->ExtraeValor(d)); // guarda el valor que tiene la variable
-                cout << "var->ExtraeValor(d) devuelve: " << var->ExtraeValor(d) << endl;
+                //cout << "var->ExtraeValor(d) devuelve: " << var->ExtraeValor(d) << endl;
 	      }
 	      else
 	         {
@@ -333,20 +410,65 @@ for(int i=0;(i<cadena.length())&&(!error);i++){
             p->desapilar();
             pf.push_back(p1);
         }
+*/
+	for(int j=0;j<cadena.length();j++)
+      {   
+	  	  d=cadena.at(j);
+      
+      	  if( (d>='a') && (d<='z') ){ // si se encuentra una variable en la expresion
 
-      cout<<"\n TERMINE la conversion a POSFIJO: "<<pf<<endl;
+			tipolista a = var->ExtraeValor(d);
+			stringstream ss;
+			ss << a;
+			string str = ss.str();
+            pf= pf+str; // guarda el valor que tiene la variable
+            continue;
+	      }
+      
+	      if ((d>='0')&&(d<='9')){
+             	pf.push_back(d);
+		}
+		  else
+	         { 
+			 	while((!p->pilavacia())&&(prcd(p->tope(),d)))
+	                {
+						p1=p->tope();
+						p->desapilar();
+						pf.push_back(' ');
+						pf.push_back(p1);
+		
+					}
+	           if((p->pilavacia())||(d!=')')){
+	           			p->apilar(d);
+	           			pf.push_back(' ');
+			   }
+		       else 
+			   		p->desapilar();
+	      }
+      }
+      while(!p->pilavacia())
+	      {
+		  	p1=p->tope();
+			p->desapilar();
+			pf.push_back(' ');
+			pf.push_back(p1);
+		}
+      //cout<<"\n TERMINE la conversion a POSFIJO: "<<pf<<endl;
 
 // Evaluacion de la expresion en posfijo
-  int o1,o2;
+  //int o1,o2;
 
-  for(int i=0; (i<pf.length()) && (!error) ; i++){
+/*  for(int i=0; (i<pf.length()) && (!error) ; i++){
      d=pf.at(i);
+     
      if(d>='0' && d<='9')
         p->apilar(d-'0');
      if(d=='<'){
                o2=p->tope();
                p->desapilar();
+               cout << "o2 es: " << o2 << endl;
                o1=p->tope();
+               cout << "o1 es: " << o1 << endl;
                p->desapilar();
                return (o1<o2);
      }
@@ -373,10 +495,47 @@ if(d=='='){
                    p->desapilar();
                    return (o1==o2);
                 }
-  }
-  cout<<endl<<"\n\nResultado= "<<p->tope()<<endl;
-}
+  }*/
+  for(int i=0;(i<pf.length())&&(!error);++i){
 
+     if(pf.at(i) == ' ')
+	 	continue;
+	 	
+     else if(isdigit(pf.at(i))){
+     	
+     	int num=0;
+     	//extract full number
+     	while(isdigit(pf.at(i)))
+			{
+			num = num * 10 + (int)(pf.at(i) - '0');
+				i++;
+			}
+			i--;
+			
+			p->apilar(num);
+	 }
+     
+	 else{
+	 		 
+	 		int val2 = p->tope();
+	 		p->desapilar();
+			int val1 = p->tope();
+			p->desapilar();
+			
+			switch (pf.at(i))
+			{
+			case '<': p->apilar(val1 < val2);break;
+			case '>': p->apilar(val1 > val2); break;
+			case '!': p->apilar(val2 != val1); break;
+			case '=': p->apilar(val2 == val1); break;
+			
+			}
+	}
+  //cout<<endl<<"\n\nResultado= "<<p->tope()<<endl;
+  
+}
+	return p->tope();
+}
 /* INT = 1
  IF = 2
  = = 3
@@ -390,7 +549,7 @@ int BuscarPalabra(string a){ // recorre el arreglo "a" de string pasado como par
     if(a.find("JUMP") != -1) return 4;
     if(a.find("SHOW") != -1) return 5;
     if(a.find("THEN") != -1) return 6;
-
+	
     cout << "No se encontraron palabras clave" << endl;
     return -1;
 }
@@ -510,7 +669,7 @@ int main()
                     }
                     while(i<aux){instr = instr->resto(); i++;} // mientras no se llegue a la línea que pide en el JUMP, itera los nodos
                     break;
-            case 5: cout << endl << EvaluaExpresion(var,instruccion.substr(instruccion.find("SHOW") +1 )) << endl;
+            case 5: cout << endl << EvaluaExpresion(var,instruccion.substr(instruccion.find("SHOW")+4)) << endl;
                     instr = instr->resto();
                     break;
             default: break;

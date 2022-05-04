@@ -2,6 +2,9 @@
 2. INT b
 3. INT e
 4. a = 4
-5. b = 5 + a
-6. e = (b-2)*3
-7. SHOW e
+5. b = 1
+6. IF ( a<1 ) THEN JUMP 10
+7. b = b*a
+8. a = a-1
+9. JUMP 6
+10. SHOW b

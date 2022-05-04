@@ -4,72 +4,271 @@
 #include <fstream>
 #include <windows.h>
 #include <cstring>
+
 using namespace std;
 
-typedef long int tipolista;
+int i=0;
 
-class Nodo{
-    protected:
-        tipolista dato;
-        char nombre; // nombre que tendra la variable
-        string instruccion;  // cadena que almacena una instruccion
+/*	La clase instruccion almacena objetos que son líneas del codigo que se quiere leer.
+*   Al crearse un nuevo objeto, se inicializa el string que almacena la instruccion.
+*   El metodo ejecutar() será reescrito en cada una de las sub clases.
+*  
+*/
+class Instruccion{
+	private:
+		string linea;
+	public:
+		Instruccion(){linea="";}
+		Instruccion(string a){this->linea = a;}
+		string getInstruccion(){return linea;}; // getInstruccion devuelve la cabeza de la lista de instrucciones
+		void setInstruccion(string ins){linea = ins;}; // setInstruccion agrega una nueva instruccion (en orden)
+		void ejecutar();
+		
+};
+
+/*	Esta clase (en su metodo ejecutar) evalua lo que está dentro del paréntesis del IF, y devuelve true o false
+*  
+*
+*/
+class Condicional:public Instruccion{
+	private:
+	public:
+};
+
+class Salto:public Instruccion{
+	private:
+	public:
+};
+
+class Show:public Instruccion{
+	private:
+	public:
+};
+
+class Variable{
+	private:
+		char nombre; // un char que identifica el nombre de la variable
+		long int valor; // Si es una variable booleana, guarda 1 en caso de ser true, y 0 en caso de ser false
+		string tipo; // tipo de variable, si es INT, tipo="entero", si es BOOL, tipo="booleano"
+	public:
+		Variable(){this->nombre=' '; this->valor=0;	this->tipo="";}
+		Variable(char b, long int c, string d){
+			this->nombre = b;
+			this->valor = c;
+			this->tipo = d;
+		}
+		Variable(char b){
+			this->nombre = b;
+			this->valor = 0;
+			this->tipo = "";
+		}
+		char getNombre(){return this->nombre;};
+		long int getValor(){return this->valor;};
+		string getTipo(){return this->tipo;};
+		void setNombre(char a){this->nombre=a;};
+		void setValor(long int v){this->valor=v;};
+		void setTipo(string t){this->tipo = t;};
+};
+
+template <class T> class Nodo{
+    private:
+        T dato;
+        //tipolistabol bolean;
+        //char nombre; // nombre que tendra la variable
+        //bool estado; // si la variable es booleana, en este atributo se guarda si es true o false.
+        //Instruccion comandos;  // objeto Instruccion que almacena las lineas del codigo
+        //Variable varia;
+        //string tipo; // cadena que almacena el tipo de instruccion (INT o BOOL)
         Nodo *next;
-    public:
+    public:    
         Nodo() {next=NULL;};
-        Nodo(tipolista a) {dato=a; next=NULL;};
-        Nodo(string cadena) {instruccion=cadena; next=NULL;} // Constructor para inicializar Nodos en la lista de instrucciones
-        Nodo(char a) {nombre=a; next=NULL;} // Constructor para inicializar Nodos en la lista de variables
-        void set_dato(tipolista a) {dato=a; };
+        Nodo(T a) {dato=a; next=NULL;};
+        //Nodo(string cadena) { comandos = cadena; next=NULL;} // Constructor para inicializar Nodos en la lista de instrucciones
+        //Nodo(char a, long int c, string d) {Variable(a,c,d); next=NULL;} // Constructor para inicializar Nodos en la lista de variables
+        //void set_datoEnt(T a) {dato=a; };
+        //void set_tipo(string b) { tipo=b;} ;
         void set_next(Nodo *n) {next=n; };
-        tipolista get_dato() {return dato; };
-        char get_nombre() {return nombre;};
-        string get_instr() {return instruccion;};
+        //tipolista get_datoEnt() {return dato; }; // devuelve el dato (entero o booleano)
+        //string get_tipo() {return tipo;} ; // agregado: devuelve el tipo (INT o BOOL) en forma de string
+        //char get_nombre() {return nombre;};
+        //string get_instr() {return comandos.getInstruccion();};
+        T get_dato() {return dato; };
         Nodo *get_next() {return next; };
         bool es_vacio() {return next==NULL;}
 };
 
-class Lista{
-    protected: Nodo *czo;
+template <class T> class Lista{
+    private: Nodo<T> *czo;
     public:
-            Lista() {czo=new Nodo();};
-            Lista(Nodo *n) {czo=n;};
+            Lista() {czo=new Nodo<T>();};
+            Lista(Nodo<T>* n) {czo=n;};
             void del(void);
-            void add(tipolista d);
-            void addvar(char nombre); // crea un nuevo nodo que contiene la variable, definida por su nombre y un valor
-            void addinstruccion(string ins); // crea un nuevo nodo que contiene la instruccion, que es pasada como parametro (string)
-            tipolista ExtraeValor(char);
-            void asignarValor(char, tipolista);
+            void add(T d);
+            void addVar(T var); // crea un nuevo nodo que contiene la variable, definida por su nombre y un valor
+            void addInstruccion(T ins); // crea un nuevo nodo que contiene la instruccion, que es pasada como parametro (string)
+            //tipolista ExtraeValorEntero(char);
+            //void asignarValorEntero(char, tipolista);
             bool esvacia(void);
-            tipolista cabeza(void);
-            char cabezavar(void);
-            string cabezastr(void); // devuelve la cabeza de la lista de instrucciones (como tipo string)
-            Lista *resto(void);
+            T cabeza(void);
+            //char cabezavar(void);
+            //string cabezastr(void); // devuelve la cabeza de la lista de instrucciones (como tipo string)
+            Lista *resto(void); //retorna el puntero al "resto" de la lista
+                        //resto= lo que queda de la lista sin la cabeza
             void concat(Lista *l1);
             Lista *copy(void);
+            string toPrint(string p);
+            void impre(void);
 };
 
-class Pila:public Lista{
+template <class T>class Pila:public Lista<T>{
       public:
-             Pila(){Lista();};
-             void apilar(tipolista x){add(x);};
-             tipolista tope(void){return cabeza();};
-             void desapilar(void){del();};
-             bool pilavacia(){return esvacia();};
+             Pila(){Lista<T>();};
+             void apilar(T x){this->add(x);};
+             T tope(void){return this->cabeza();};
+             void desapilar(void){this->del();};
+             bool pilavacia(){return this->esvacia();};
+};
+
+/*	Esta clase en su metodo ejecutar, declara una variable nueva
+*   y la agrega a una lista
+*
+*/
+class Declaracion:public Instruccion{
+	private:
+		string declaracion;
+		char extraeNombreVariable(string cadena){ // recorre el string pasado como parametro y extrae el nombre de la variable (de 'a' hasta 'z' inclusive)
+     		char n_variable;
+     		for(int i = 0; i<cadena.length() ; i++){
+        		if( (cadena.at(i) >= 'a') && (cadena.at(i) <= 'z'))
+            		return n_variable = cadena.at(i);
+    	 	}
+    	}
+    	 int search(string a){ // recorre el arreglo "a" de string pasado como parametro en busca de palabras clave
+    			if(a.find("INT")!= -1) return 1;
+    			if(a.find("IF") != -1) return 2;
+    			if(a.find("=") != -1) return 3;
+    			if(a.find("JUMP") != -1) return 4;
+    			if(a.find("SHOW") != -1) return 5;
+    			if(a.find("THEN") != -1) return 6;
+				if(a.find("BOOL")!= -1) return 7;
+    			cout << "No se encontraron palabras clave" << endl;
+    			return -1;	
+    	}
+	public:
+		// Constructores
+		Declaracion(){this->declaracion="";};
+		Declaracion(string linea){ this->declaracion=linea;};
+		
+		// Metodos
+		string getDeclaracion(){return this->declaracion;}
+		void ejecutar(Lista<Variable> *variables, Lista<Instruccion> *instrucciones, int i){
+			Variable *v = new Variable(extraeNombreVariable(this->getDeclaracion()));
+			variables->add(*v);
+			if(search(this->getDeclaracion())==1)
+				v->setTipo("entero");
+			else if(search(this->getDeclaracion())==7)
+				v->setTipo("booleano");
+			i++;
+			
+			cout << endl << v->getTipo() << endl;
+
+		}
+		
+};
+
+/*	La clase instruccion almacena asigna una variable existente, su valor
+*  
+*
+*/
+class Asignacion:public Instruccion{
+	private:
+		string asignacion;
+		char extraeNombreVariable(string cadena){ // recorre el string pasado como parametro y extrae el nombre de la variable (de 'a' hasta 'z' inclusive)
+     		char n_variable;
+     		for(int i = 0; i<cadena.length() ; i++){
+        		if( (cadena.at(i) >= 'a') && (cadena.at(i) <= 'z'))
+            		return n_variable = cadena.at(i);
+    	 	}
+    	}
+    	int search(string a){ // recorre el arreglo "a" de string pasado como parametro en busca de palabras clave
+    			if(a.find("INT")!= -1) return 1;
+    			if(a.find("IF") != -1) return 2;
+    			if(a.find("=") != -1) return 3;
+    			if(a.find("JUMP") != -1) return 4;
+    			if(a.find("SHOW") != -1) return 5;
+    			if(a.find("THEN") != -1) return 6;
+				if(a.find("BOOL")!= -1) return 7;
+    			cout << "No se encontraron palabras clave" << endl;
+    			return -1;
+		}
+	public:
+		// Constructores
+		Asignacion(){this->asignacion = "";};
+		Asignacion(string linea){this->asignacion;};
+		
+		//Metodos
+		string getAsignacion(){return this->asignacion;}
+		void ejecutar(Lista<Variable> *variables, Lista<Instruccion> *instrucciones, int i){
+			
+			//asignacion.substr(asignacion.find("=") + 1);
+			//variables->asignarValor(extraeNombreVariable(this->getAsignacion()), EvaluaExpresion(var,instruccion.substr(instruccion.find("=") + 1)));
+			i++;	
+		}
+
 };
 
 
-void Lista::del(void)
-{    Nodo *aux;
-     aux=czo;
-     czo=czo->get_next();
-     delete aux;
-}
-void Lista::add(tipolista d)
+/*template <class T>void Lista<T>::del(void)
+{    //borra el nodo cabeza
+    if (!this->esvacia()) {
+        Nodo<T>* tmp = czo;
+        czo = czo->get_next();
+        delete tmp;
+    }
+}*/
+
+template <class T> void Lista<T>::add(T d) // Añade nodos a la lista, como si fuera una pila LIFO
 {
-     Nodo *nuevo=new Nodo(d);
+    	Nodo<T>* nuevo = new Nodo<T>(d);
+    	nuevo->set_next(czo);
+    	czo = nuevo;
+}
+template <class T> void Lista<T>::addInstruccion(T d){ // añade las instrucciones a la lista de instrucciones pero en forma "ordenada", es decir, primero se agrega la primer linea del txt, luego la segunda, y así
+     Nodo<T> *nuevo=new Nodo<T>(d);
+
+     if(esvacia()){
+        nuevo->set_next(czo);
+        czo=nuevo;
+     }else{
+            Nodo<T> *aux = new Nodo<T>(); // se crea un nodo auxiliar
+            aux = czo;
+           if(aux->get_next()->get_next() == NULL){ // si hay un solo nodo
+                nuevo->set_next(aux->get_next());
+                aux->set_next(nuevo);
+           }
+           else{ // sino, itera hasta encontrar la posicion correcta
+                while(aux->get_next()->get_next() != NULL) aux=aux->get_next();
+                    if(aux->get_next()->get_next() == NULL){
+                        nuevo->set_next(aux->get_next());
+                        aux->set_next(nuevo);
+                    }
+           }
+        }
+}
+
+/*template <class tipolista> void Lista<tipolista>::addVar(char n, string b){ // añade (o inicializa) una variable en la lista de variables (utiliza otro constructor de nodo)
+     Nodo<tipolista> *nuevo=new Nodo<tipolista>(n);
+     nuevo->set_next(czo);
+     nuevo->set_tipo(b);
+     czo=nuevo;
+}*/
+
+/*template <class T> void Lista<T>::addVar(T n){ // añade (o inicializa) una variable en la lista de variables (utiliza otro constructor de nodo)
+     Nodo<T> *nuevo=new Nodo<T>(n);
      nuevo->set_next(czo);
      czo=nuevo;
-}
+}*/
+
 
 // funcion precedencia
 // prcd(o1,'(') = 0 para todo o1 != de ')'
@@ -92,14 +291,14 @@ int prcd(int o1,int o2)
 
 // métodos creados para el parcial---------------------------
 
-char ExtraeNombre(string cadena){ // recorre el string pasado como parametro y extrae el nombre de la variable (de 'a' hasta 'z' inclusive)
+char extraeNombreVariable(string cadena){ // recorre el string pasado como parametro y extrae el nombre de la variable (de 'a' hasta 'z' inclusive)
      char n_variable;
      for(int i = 0; i<cadena.length() ; i++){
         if( (cadena.at(i) >= 'a') && (cadena.at(i) <= 'z'))
             return n_variable = cadena.at(i);
      }
 }
-tipolista Lista::ExtraeValor(char n){ // busca la variable en la lista de variables a partir de su nombre, y retorna su valor como tipolista
+/*T Lista::ExtraeValorEntero(char n){ // busca la variable en la lista de variables a partir de su nombre, y retorna su valor como tipolista
     char b;
     if(esvacia()){
         cout<<" Error, variable " << n << " no declarada";
@@ -107,19 +306,35 @@ tipolista Lista::ExtraeValor(char n){ // busca la variable en la lista de variab
         return -1;
         }
     if(n == czo->get_nombre()){
-        tipolista a = czo->get_dato(); // recupero el valor de la variable
+        T valor = czo->get_datoEnt(); // recupero el valor de la variable
+        //return b = a+'0'; // conversion del integer a char
+        return valor;
+    }else
+        return resto()->ExtraeValorEntero(n);
+}
+
+tipolistabol Lista::ExtraeValorBoleano(char n){ // busca la variable en la lista de variables a partir de su nombre, y retorna su valor como tipolista
+    char b;
+    if(esvacia()){
+        cout<<" Error, variable " << n << " no declarada";
+        //return '\0';
+        return -1;
+        }
+    if(n == czo->get_nombre()){
+        tipolistabol a = czo->get_datoBol(); // recupero el valor booleano de la variable
         //return b = a+'0'; // conversion del integer a char
         return a;
     }else
-        return resto()->ExtraeValor(n);
+        return resto()->ExtraeValorBoleano(n);
 }
 
-void Lista::addvar(char n){ // añade (o inicializa) una variable en la lista de variables (utiliza otro constructor de nodo)
+void Lista::addVar(char n, string b){ // añade (o inicializa) una variable en la lista de variables (utiliza otro constructor de nodo)
      Nodo *nuevo=new Nodo(n);
      nuevo->set_next(czo);
+     nuevo->set_tipo(b);
      czo=nuevo;
 }
-void Lista::addinstruccion(string cadena){ // añade las instrucciones a la lista de instrucciones pero en forma "ordenada"
+void Lista::addInstruccion(string cadena){ // añade las instrucciones a la lista de instrucciones pero en forma "ordenada", es decir, primero se agrega la primer linea del txt, luego la segunda, y así
      Nodo *nuevo=new Nodo(cadena);
 
      if(esvacia()){
@@ -140,17 +355,20 @@ void Lista::addinstruccion(string cadena){ // añade las instrucciones a la lista
                     }
            }
         }
-}
-void Lista::asignarValor(char n, tipolista valor){ // asigna el valor a una variable de la lista que es pasada como parametro junto con el valor
+}*/
+/*template <class T> void Lista<T>::asignarValor(char n, T valor){ // asigna el valor a una variable de la lista que es pasada como parametro junto con el valor
     if(esvacia())
         cout << "Error, Lista vacia";
+        
+// Acá tengo que preguntar si la varable es INT o BOOL, para saber qué set tengo que usar
 
-    if(n == czo->get_nombre()) // si se encuentra la variable en la lista, asigna el valor pasado como parametro
-        czo->set_dato(valor);
+    if(n == czo->get_nombre()){ // si se encuentra la variable en la lista, asigna el valor pasado como parametro
+        czo->set_datoEnt(valor);
+		}
     else return this->resto()->asignarValor(n,valor);
 
 }
-
+/*
 string Lista::cabezastr(void){ // retorna la cabeza de la lista de instrucciones
     if(esvacia()){
                 cout<<" Error, Cabeza de lista vacia1";
@@ -208,7 +426,7 @@ for(int i=0;(i<cadena.length())&&(!error);i++){
       
       	  if( (d>='a') && (d<='z') ){ // si se encuentra una variable en la expresion
 
-			tipolista a = var->ExtraeValor(d);
+			tipolista a = var->ExtraeValorEntero(d);
 			stringstream ss;
 			ss << a;
 			string str = ss.str();
@@ -328,12 +546,12 @@ for(int i=0;(i<cadena.length())&&(!error);i++){
       char d,p1;
       /*;
 */
-	for(int j=0;j<cadena.length();j++)
+	/*for(int j=0;j<cadena.length();j++)
       {   
 	  	  d=cadena.at(j);
       
       	  if( (d>='a') && (d<='z') ){ // si se encuentra una variable en la expresion
-			tipolista a = var->ExtraeValor(d);
+			tipolista a = var->ExtraeValorEntero(d);
 			stringstream ss;
 			ss << a;
 			string str = ss.str();
@@ -370,10 +588,6 @@ for(int i=0;(i<cadena.length())&&(!error);i++){
 			pf.push_back(p1);
 		}
       //cout<<"\n TERMINE la conversion a POSFIJO: "<<pf<<endl;
-
-
-
-
   
   for(int i=0;(i<pf.length())&&(!error);++i){
 
@@ -422,7 +636,7 @@ for(int i=0;(i<cadena.length())&&(!error);i++){
  JUMP = 4
  SHOW = 5
  THEN = 6*/
-int BuscarPalabra(string a){ // recorre el arreglo "a" de string pasado como parametro en busca de palabras clave
+int search(string a){ // recorre el arreglo "a" de string pasado como parametro en busca de palabras clave
     if(a.find("INT")!= -1) return 1;
     if(a.find("IF") != -1) return 2;
     if(a.find("=") != -1) return 3;
@@ -436,70 +650,111 @@ int BuscarPalabra(string a){ // recorre el arreglo "a" de string pasado como par
 
 //-----------------------------------------------------------
 
-bool Lista::esvacia(void)
+template <class T>bool Lista<T>::esvacia(void)
 {
     return czo->es_vacio();
 }
 
-tipolista Lista::cabeza(void)
+template <class T>T Lista<T>::cabeza(void)
 {
-  if(esvacia()){
-                cout<<" Error, Cabeza de lista vacia4";
-                return -1;
-  }
-  return czo->get_dato();
+ /* if (this->esvacia()) {
+        cout << " Error, Cabeza de lista vacia";
+        return NULL;
+    }*/
+    return czo->get_dato();
 }
 
-Lista *Lista::resto(void)
+template <class tipolista> Lista<tipolista> *Lista<tipolista>::resto(void)
 {
       Lista *l=new Lista(czo->get_next());
       return (l);
 }
 
-void Lista::concat(Lista *l1)
+
+template <class T> void Lista<T>::concat(Lista<T>* l1)
 {// le transfiere los datos de l1 a this
-   if (!(l1->esvacia())){
-      this->addinstruccion(l1->cabezastr());
-      this->concat(l1->resto());
-   }
+    if (!(l1->esvacia())) {
+        this->concat(l1->resto());
+        this->add(l1->cabeza());
+    }
 }
-Lista *Lista::copy(void)
+
+template <class T> Lista<T>* Lista<T>::copy(void)
 {
-      Lista *aux=new Lista();
-      aux->concat(this);
-      return aux;
+    Lista<T>* aux = new Lista();
+    aux->concat(this);
+    return aux;
 }
 
 int main()
 {
+	
     int i=0, aux=0, inicio=0, fin=0;
-    string a, c, f, instruccion;
+    string a, c, f, instruccionNext;
     stringstream b,e;
 
     // Declaración de listas para variables e instrucciones -------
 
-    Lista *instr = new Lista(); // lista que almacena instrucciones
-    Lista *var = new Lista(); // Lista que almacena variables
-    Lista *auxlista = new Lista(); // Lista auxiliar que es copia de la lista de instrucciones
+    Lista<Instruccion> *instrucciones = new Lista<Instruccion>(); // lista que almacena instrucciones
+    Lista<Variable> *var = new Lista<Variable>(); // Lista que almacena variables
+    Lista<Instruccion> *auxlista = new Lista<Instruccion>(); // Lista auxiliar (copia de la lista de instrucciones)
 
     // lectura y apertura del archivo------
 
     ifstream archivo;
     string temp;
     archivo.open("programa - copia.txt", ios::in);
-    while(getline(archivo,temp))
-            instr->addinstruccion(temp);
+    while(getline(archivo,temp)){
+    	Instruccion *i = new Instruccion(temp);
+		instrucciones->addInstruccion(*i);
+	} 
     archivo.close();
-
+    
     // ejecucion de instrucciones-------
+    auxlista = instrucciones->copy();// guardo una copia de la lista en una lista auxiliar para el JUMP hacia arriba
+    
+    // Itero la lista de instrucciones
+	Instruccion *comando = new Instruccion(); // Iterador para recorrer la lista
+	while(!instrucciones->esvacia()){
+		*comando = instrucciones->cabeza();
+		switch(search(comando->getInstruccion())){
+			case 1: Declaracion *d = new Declaracion(comando->getInstruccion());
+					d->ejecutar(var,instrucciones,i);
+					instrucciones = instrucciones->resto();
+					break;
+			/*case 2: //Condicional *c = new Condicional(comando->getInstruccion());
+					//c->ejecutar(*var,comando->getInstruccion());
+					
+					//instr = instr->resto();*/
+			/*case 3: Asignacion *a = new Asignacion(comando->getInstruccion());
+					a->ejecutar(var,instrucciones,i);
+					instrucciones = instrucciones->resto();
+					break;
+			/*case 4:
+			case 5:
+			case 6:
+			case 7:
+					Declaracion *d = new Declaracion();
+					var->addVar(*d,"booleano");
+					instrucciones = instrucciones->resto();
+					break;*/
+		//	default: break;
+		}
 
-    auxlista = instr->copy();// guardo una copia de la lista en una lista auxiliar para el JUMP hacia arriba
+	}
+	/*Variable *h = new Variable();
+	*h=var->cabeza();
+	cout << h->getNombre();
+	*h=var->resto()->cabeza();
+	cout << h->getNombre();*/
 
-    while(!instr->esvacia()){ // ejecucion principal, mientras en la lista de instrucciones haya elementos
+    // ejecucion de instrucciones-------    
 
-    instruccion = instr->cabezastr(); // extrae la instruccion a ejecutar
+    /*while(!instr->esvacia()){ // ejecucion principal, mientras en la lista de instrucciones haya elementos
+
+    nextInstruccion = instr->getInstruccion(); // extrae la instruccion a ejecutar
     i++; // contador de lineas del programa
-        switch(BuscarPalabra(instruccion)){
+        switch(buscarPalabra(instruccion)){
             case 1: var->addvar(ExtraeNombre(instruccion)); // declara variable entera (INT)
                     instr = instr->resto();
                     break;
@@ -513,7 +768,7 @@ int main()
                     f = instruccion.substr(instruccion.find("THEN")+4);
 
                     if(EvaluaBooleano(var,c)){
-                      switch(BuscarPalabra(f)){
+                      switch(buscarPalabra(f)){
                             case 3:// si hay que hacer una asignacion
                                     var->asignarValor(ExtraeNombre(f), EvaluaExpresion(var,f.substr(f.find("=") + 1)));
                                     instr = instr->resto();
@@ -556,9 +811,9 @@ int main()
                     instr = instr->resto();
                     break;
             default: break;
-        }
+        }*/
 
-    }
+    //}
 
   cout<<endl;
 //system("PAUSE");
